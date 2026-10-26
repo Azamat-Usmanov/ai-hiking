@@ -4,10 +4,12 @@
     "status": "passed",
     "seconds": 17.0,
     "route_ids": [
-      "oeilly-luitel"
+      "oeilly-luitel",
+      "premol-luitel"
     ],
     "exact_match": true,
     "weather_status": [
+      "ok",
       "ok"
     ],
     "problems": []
@@ -15,7 +17,7 @@
   {
     "id": "easy_2h",
     "status": "passed",
-    "seconds": 11.2,
+    "seconds": 11.3,
     "route_ids": [
       "premol-luitel"
     ],
@@ -28,12 +30,22 @@
   {
     "id": "no_exact",
     "status": "passed",
-    "seconds": 15.8,
+    "seconds": 36.2,
     "route_ids": [
-      "premol-luitel"
+      "premol-luitel",
+      "belvedere-vizille",
+      "ferme-froussard",
+      "petit-sentier-prairie",
+      "remparts-uriage",
+      "vignasses"
     ],
     "exact_match": false,
     "weather_status": [
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
       "ok"
     ],
     "problems": []
@@ -41,12 +53,14 @@
   {
     "id": "forecast_horizon",
     "status": "passed",
-    "seconds": 10.0,
+    "seconds": 11.0,
     "route_ids": [
-      "oeilly-luitel"
+      "oeilly-luitel",
+      "premol-luitel"
     ],
     "exact_match": true,
     "weather_status": [
+      "outside_forecast",
       "outside_forecast"
     ],
     "problems": []
@@ -54,14 +68,20 @@
   {
     "id": "ascent_400",
     "status": "passed",
-    "seconds": 20.8,
+    "seconds": 33.6,
     "route_ids": [
       "emeindras",
       "mont-rachais",
-      "traversee-vouillants"
+      "traversee-vouillants",
+      "ecoutoux",
+      "oeilly-luitel",
+      "belvedere-vizille"
     ],
     "exact_match": true,
     "weather_status": [
+      "ok",
+      "ok",
+      "ok",
       "ok",
       "ok",
       "ok"
@@ -71,14 +91,43 @@
   {
     "id": "longer_than_2h",
     "status": "passed",
-    "seconds": 24.1,
+    "seconds": 36.4,
     "route_ids": [
-      "cirque-prevourey",
       "cote-charvet",
-      "ecoutoux"
+      "ecoutoux",
+      "saint-eynard",
+      "emeindras",
+      "jarry-pond",
+      "mont-rachais"
     ],
     "exact_match": true,
     "weather_status": [
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok"
+    ],
+    "problems": []
+  },
+  {
+    "id": "broad_six",
+    "status": "passed",
+    "seconds": 37.4,
+    "route_ids": [
+      "cote-charvet",
+      "ferme-froussard",
+      "petit-sentier-prairie",
+      "premol-luitel",
+      "remparts-uriage",
+      "vignasses"
+    ],
+    "exact_match": true,
+    "weather_status": [
+      "ok",
+      "ok",
+      "ok",
       "ok",
       "ok",
       "ok"

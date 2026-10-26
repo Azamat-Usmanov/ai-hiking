@@ -12,6 +12,7 @@ from zoneinfo import ZoneInfo
 import httpx
 from mcp import Client, StdioServerParameters
 from pydantic import BaseModel, Field, ValidationError
+from app.limits import DISPLAY_LIMIT, MCP_CANDIDATE_LIMIT
 from app.ranking import score_route
 
 
@@ -188,7 +189,7 @@ async def build_plan(query: str, supplied_date: str | None = None) -> dict:
                 "exact": [{"id": r["id"], "duration_minutes": r["duration_minutes"], "difficulty": r["difficulty"]} for r in found["exact"]],
                 "alternatives": [{"id": r["id"], "mismatches": r["mismatches"]} for r in found["alternatives"]],
             }})
-            candidates = found["exact"][:5] if found["exact"] else found["alternatives"][:3]
+            candidates = (found["exact"] if found["exact"] else found["alternatives"])[:MCP_CANDIDATE_LIMIT]
             if not candidates:
                 return {"status": "no_routes", "message": "Маршруты по запросу не найдены.", "routes": [], "trace": trace}
             ids = [r["id"] for r in candidates]
@@ -214,22 +215,25 @@ async def build_plan(query: str, supplied_date: str | None = None) -> dict:
         schema = Decision.model_json_schema()
         schema["properties"]["route_ids"]["items"]["enum"] = ids
         schema["properties"]["route_ids"]["minItems"] = 1
-        schema["properties"]["route_ids"]["maxItems"] = 3
+        schema["properties"]["route_ids"]["maxItems"] = DISPLAY_LIMIT
         try:
             decision_data = await llm_json(
-                "Ты выбираешь и ранжируешь до трёх пеших маршрутов. Верни только route_ids из candidates, "
+                "Ты выбираешь и ранжируешь до шести пеших маршрутов. Верни только route_ids из candidates, "
                 "лучший первым. Учитывай relevance_score, близость длительности и набора высоты к запросу, сложность, озеро и погоду. "
                 "Не выбирай сложный маршрут как легкий. Если точных вариантов нет, предложи ближайшие альтернативы.",
-                json.dumps(payload, ensure_ascii=False), schema, 180,
+                json.dumps(payload, ensure_ascii=False), schema, 260,
             )
             decision = Decision.model_validate(decision_data)
             decision_fallback = False
         except (RuntimeError, ValidationError):
-            decision = Decision(route_ids=[r["id"] for r in candidates[:3]])
+            decision = Decision(route_ids=[r["id"] for r in candidates[:DISPLAY_LIMIT]])
             decision_fallback = True
         allowed = {r["id"]: r for r in candidates}
+        model_ids = [route_id for route_id in decision.route_ids if route_id in allowed]
+        selected_ids = list(dict.fromkeys(model_ids + [r["id"] for r in candidates]))[:DISPLAY_LIMIT]
+        filled_from_ranking = len(selected_ids) > len(set(model_ids))
         route_cards = []
-        for route_id in decision.route_ids[:3]:
+        for route_id in selected_ids:
             if route_id not in allowed or any(r["id"] == route_id for r in route_cards):
                 continue
             route = allowed[route_id]
@@ -246,16 +250,10 @@ async def build_plan(query: str, supplied_date: str | None = None) -> dict:
                                 "relevance_score": ranked[route_id]["score"],
                                 "score_components": ranked[route_id]["components"],
                                 "weather": forecast.get("routes", {}).get(route_id, {"status": forecast["status"]})})
-        if not route_cards:
-            route_cards = [{**r, "reason": "Маршрут выбран по баллу соответствия после некорректного ответа модели.",
-                            "tradeoff": "Отличие от запроса: " + ", ".join(r["mismatches"]) + "." if r["mismatches"] else "",
-                            "relevance_score": ranked[r["id"]]["score"],
-                            "score_components": ranked[r["id"]]["components"],
-                            "weather": forecast.get("routes", {}).get(r["id"], {"status": forecast["status"]})}
-                           for r in candidates[:3]]
-            decision_fallback = True
         route_cards.sort(key=lambda r: (-r["relevance_score"], r["id"]))
-        trace.append({"stage": "LLM 2", "action": "Выбор и ранжирование" + (" (резервный выбор по баллам)" if decision_fallback else ""),
+        trace.append({"stage": "LLM 2", "action": "Выбор и ранжирование" +
+                      (" (резервный выбор по баллам)" if decision_fallback else
+                       " (дополнение по баллам)" if filled_from_ranking else ""),
                       "result": [r["id"] for r in route_cards]})
         message = ("Нашёл маршруты, которые соответствуют указанным ограничениям." if found["exact"]
                    else "Точного совпадения нет. Ниже ближайшие варианты и их отличия от запроса.")

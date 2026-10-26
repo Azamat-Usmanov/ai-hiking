@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 
 import httpx
+from app.limits import DISPLAY_LIMIT, MCP_CANDIDATE_LIMIT
 
 ROOT = Path(__file__).resolve().parent.parent
 CATALOG = {r["id"]: r for r in json.loads((ROOT / "data" / "routes.json").read_text())}
@@ -17,6 +18,7 @@ CASES = [
     {"id": "forecast_horizon", "query": "Подбери умеренный маршрут у озера близ Гренобля до 4 часов", "date": "2026-11-20", "expect_no_forecast": True},
     {"id": "ascent_400", "query": "найди маршрут с высотой 400 метров", "date": "2026-10-27", "target_ascent_m": 400},
     {"id": "longer_than_2h", "query": "найди маршруты длительностью больше 2 часов", "date": "2026-10-27", "min_minutes_exclusive": 120, "expect_exact": True},
+    {"id": "broad_six", "query": "Подбери любые пешие маршруты рядом с Греноблем", "date": "2026-10-27", "expect_candidates": MCP_CANDIDATE_LIMIT, "expect_routes": DISPLAY_LIMIT},
 ]
 
 
@@ -27,6 +29,17 @@ def check(case, response):
     routes = response.get("routes", [])
     if not routes:
         problems.append("empty route list")
+    if len(routes) > DISPLAY_LIMIT:
+        problems.append("too many displayed routes")
+    if case.get("expect_routes") and len(routes) != case["expect_routes"]:
+        problems.append(f"expected {case['expect_routes']} displayed routes, got {len(routes)}")
+    if case.get("expect_candidates"):
+        search = next((x for x in response.get("trace", []) if x.get("tool") == "search_routes"), {})
+        if len(search.get("result", {}).get("exact", [])) != case["expect_candidates"]:
+            problems.append("MCP did not return eight candidates")
+        weather = next((x for x in response.get("trace", []) if x.get("tool") == "get_weather"), {})
+        if len(weather.get("result", {}).get("routes", {})) != case["expect_candidates"]:
+            problems.append("weather did not cover eight candidates")
     if case.get("expect_no_exact") and response.get("exact_match"):
         problems.append("claimed exact match for impossible request")
     if case.get("expect_exact") and not response.get("exact_match"):

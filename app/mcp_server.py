@@ -8,6 +8,7 @@ import httpx
 from mcp.server import MCPServer
 
 from app.catalog import all_routes, route_by_id
+from app.limits import MCP_CANDIDATE_LIMIT
 
 mcp = MCPServer("Grenoble Hiking Data")
 
@@ -66,7 +67,9 @@ def search_routes(max_hours: float | None = None, min_hours: float | None = None
 
     exact.sort(key=closeness)
     alternatives.sort(key=lambda r: (len(r["mismatches"]), closeness(r)))
-    return {"exact": exact[:5], "alternatives": alternatives[:3], "total_catalogue": len(all_routes())}
+    return {"exact": exact[:MCP_CANDIDATE_LIMIT],
+            "alternatives": alternatives[:MCP_CANDIDATE_LIMIT],
+            "total_catalogue": len(all_routes())}
 
 
 @mcp.tool()
@@ -74,7 +77,7 @@ def get_weather(route_ids: list[str], trip_date: str) -> dict:
     """Get the Open-Meteo daily forecast for route starting points, or an explicit unavailable status.
 
     Args:
-        route_ids: IDs returned by search_routes, maximum five.
+        route_ids: IDs returned by search_routes, maximum eight.
         trip_date: Local date in YYYY-MM-DD format.
     """
     try:
@@ -86,7 +89,7 @@ def get_weather(route_ids: list[str], trip_date: str) -> dict:
         return {"status": "outside_forecast", "routes": {}, "forecast_horizon_days": 16}
     results = {}
     with httpx.Client(timeout=12.0, headers={"User-Agent": "ai-hiking-planner/1.0"}) as client:
-        for route_id in route_ids[:5]:
+        for route_id in route_ids[:MCP_CANDIDATE_LIMIT]:
             route = route_by_id(route_id)
             if not route:
                 continue
