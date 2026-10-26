@@ -10,7 +10,9 @@ def score_route(route: dict, intent: dict, weather: dict | None = None) -> dict:
     score, not a safety prediction or a probability of enjoying the hike.
     """
     weather = weather or {}
-    target = (intent.get("max_hours") or 0) * 60
+    upper = (intent.get("max_hours") or 0) * 60
+    lower = (intent.get("min_hours") or 0) * 60
+    target = (upper + lower) / 2 if upper and lower else upper or lower
     target_ascent = intent.get("target_ascent_m") or 0
     duration_weight = 20 if target and target_ascent else (0 if target_ascent else 35)
     ascent_weight = 15 if target and target_ascent else (35 if target_ascent else 0)

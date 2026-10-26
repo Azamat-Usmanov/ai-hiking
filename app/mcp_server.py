@@ -15,18 +15,22 @@ DIFFICULTY = {"easy": 0, "moderate": 1, "hard": 2}
 
 
 @mcp.tool()
-def search_routes(max_hours: float | None = None, difficulty: str = "any", lake: bool = False,
+def search_routes(max_hours: float | None = None, min_hours: float | None = None,
+                  min_hours_exclusive: bool = False, difficulty: str = "any", lake: bool = False,
                   target_ascent_m: int | None = None, trip_date: str | None = None) -> dict:
     """Find sourced hiking routes around Grenoble. Return exact matches and clearly marked alternatives.
 
     Args:
         max_hours: Maximum walking time in hours, or null if unspecified.
+        min_hours: Minimum walking time in hours, or null if unspecified.
+        min_hours_exclusive: Exclude routes exactly at the minimum when true.
         difficulty: Highest allowed difficulty: easy, moderate, hard, or any.
         lake: Whether the route must reach a lake (a pond does not count).
         target_ascent_m: Desired elevation gain in metres; ranked by proximity, not a hard limit.
         trip_date: Local date in YYYY-MM-DD for checking published seasonal windows.
     """
     max_minutes = max_hours * 60 if max_hours else None
+    min_minutes = min_hours * 60 if min_hours else None
     ceiling = DIFFICULTY.get(difficulty, 2)
     exact, alternatives = [], []
     for route in all_routes():
@@ -41,6 +45,8 @@ def search_routes(max_hours: float | None = None, difficulty: str = "any", lake:
                 pass
         if max_minutes is not None and route["duration_minutes"] > max_minutes:
             problems.append("дольше заданного времени")
+        if min_minutes is not None and (route["duration_minutes"] <= min_minutes if min_hours_exclusive else route["duration_minutes"] < min_minutes):
+            problems.append("не дольше заданного минимума" if min_hours_exclusive else "короче заданного времени")
         if difficulty != "any" and DIFFICULTY[route["difficulty"]] > ceiling:
             problems.append("сложнее заданного уровня")
         if lake and not route["lake"]:
@@ -50,11 +56,13 @@ def search_routes(max_hours: float | None = None, difficulty: str = "any", lake:
             alternatives.append(item)
         else:
             exact.append(item)
+    duration_target = (max_minutes + min_minutes) / 2 if max_minutes and min_minutes else max_minutes or min_minutes
+
     def closeness(route):
         if target_ascent_m:
             return (abs(route["ascent_m"] - target_ascent_m),
-                    abs(route["duration_minutes"] - max_minutes) if max_minutes else 0)
-        return (abs(route["duration_minutes"] - max_minutes) if max_minutes else 0, route["ascent_m"])
+                    abs(route["duration_minutes"] - duration_target) if duration_target else 0)
+        return (abs(route["duration_minutes"] - duration_target) if duration_target else 0, route["ascent_m"])
 
     exact.sort(key=closeness)
     alternatives.sort(key=lambda r: (len(r["mismatches"]), closeness(r)))

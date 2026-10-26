@@ -2,7 +2,7 @@
   {
     "id": "lake_4h_moderate",
     "status": "passed",
-    "seconds": 7.8,
+    "seconds": 17.0,
     "route_ids": [
       "oeilly-luitel"
     ],
@@ -15,7 +15,7 @@
   {
     "id": "easy_2h",
     "status": "passed",
-    "seconds": 10.3,
+    "seconds": 11.2,
     "route_ids": [
       "premol-luitel"
     ],
@@ -28,7 +28,7 @@
   {
     "id": "no_exact",
     "status": "passed",
-    "seconds": 15.4,
+    "seconds": 15.8,
     "route_ids": [
       "premol-luitel"
     ],
@@ -41,7 +41,7 @@
   {
     "id": "forecast_horizon",
     "status": "passed",
-    "seconds": 10.3,
+    "seconds": 10.0,
     "route_ids": [
       "oeilly-luitel"
     ],
@@ -54,11 +54,28 @@
   {
     "id": "ascent_400",
     "status": "passed",
-    "seconds": 19.3,
+    "seconds": 20.8,
     "route_ids": [
       "emeindras",
       "mont-rachais",
       "traversee-vouillants"
+    ],
+    "exact_match": true,
+    "weather_status": [
+      "ok",
+      "ok",
+      "ok"
+    ],
+    "problems": []
+  },
+  {
+    "id": "longer_than_2h",
+    "status": "passed",
+    "seconds": 24.1,
+    "route_ids": [
+      "cirque-prevourey",
+      "cote-charvet",
+      "ecoutoux"
     ],
     "exact_match": true,
     "weather_status": [
