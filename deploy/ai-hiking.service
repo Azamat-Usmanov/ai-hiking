@@ -1,0 +1,19 @@
+[Unit]
+Description=AI Hiking Planner
+After=network-online.target ollama.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hiking
+Group=hiking
+WorkingDirectory=/opt/ai-hiking
+Environment=PYTHONUNBUFFERED=1
+Environment=OLLAMA_URL=http://127.0.0.1:11434
+Environment=OLLAMA_MODEL=qwen3:4b-instruct
+ExecStart=/opt/ai-hiking/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,54 @@
+[
+  {
+    "id": "lake_4h_moderate",
+    "status": "passed",
+    "seconds": 3.1,
+    "route_ids": [
+      "oeilly-luitel"
+    ],
+    "exact_match": true,
+    "weather_status": [
+      "ok"
+    ],
+    "problems": []
+  },
+  {
+    "id": "easy_2h",
+    "status": "passed",
+    "seconds": 8.6,
+    "route_ids": [
+      "premol-luitel"
+    ],
+    "exact_match": true,
+    "weather_status": [
+      "ok"
+    ],
+    "problems": []
+  },
+  {
+    "id": "no_exact",
+    "status": "passed",
+    "seconds": 12.9,
+    "route_ids": [
+      "premol-luitel"
+    ],
+    "exact_match": false,
+    "weather_status": [
+      "ok"
+    ],
+    "problems": []
+  },
+  {
+    "id": "forecast_horizon",
+    "status": "passed",
+    "seconds": 7.9,
+    "route_ids": [
+      "oeilly-luitel"
+    ],
+    "exact_match": true,
+    "weather_status": [
+      "outside_forecast"
+    ],
+    "problems": []
+  }
+]

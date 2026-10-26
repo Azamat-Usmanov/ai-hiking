@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#132a27">
+  <meta name="description" content="Подберите однодневный пеший маршрут рядом с Греноблем по времени, сложности и погоде.">
+  <title>Тропа — AI-планировщик походов</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Тропа, главная"><span class="brand-mark">⌁</span> Тропа<span class="brand-dot">.</span></a>
+    <nav><a href="#how">Как работает</a><a href="/presentation">О проекте ↗</a></nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-shade"></div>
+      <div class="hero-content">
+        <div class="eyebrow"><span></span> ВАШ СЛЕДУЮЩИЙ МАРШРУТ</div>
+        <h1>Горы ближе,<br><em>чем кажется.</em></h1>
+        <p>Расскажите, куда хочется пойти. Мы сопоставим ваши пожелания с маршрутами вокруг Гренобля и проверим прогноз.</p>
+        <a href="#planner" class="hero-link">Подобрать поход <span>↗</span></a>
+      </div>
+      <div class="hero-bottom"><span>ГРЕНОБЛЬ · ФРАНЦУЗСКИЕ АЛЬПЫ</span><span>01 / 03</span></div>
+    </section>
+
+    <section class="planner" id="planner">
+      <div class="section-heading"><div><span class="kicker">ПЛАНИРОВЩИК МАРШРУТА</span><h2>Куда отправимся?</h2></div><p>Опишите прогулку своими словами. Можно указать длительность, озеро, сложность и другие пожелания.</p></div>
+      <form id="planner-form" class="search-form">
+        <label for="query">ВАШ ЗАПРОС</label>
+        <div class="query-row"><textarea id="query" name="query" minlength="5" maxlength="500" rows="2" required placeholder="Например: найди поход рядом с Греноблем на 4 часа, с озером, не слишком сложный"></textarea></div>
+        <div class="form-footer"><div class="date-block"><label for="trip-date">ДАТА ПОХОДА</label><input type="date" id="trip-date" name="date"></div><button type="submit" id="submit"><span>Найти маршрут</span><span aria-hidden="true">↗</span></button></div>
+      </form>
+      <div class="examples"><span>ПОПРОБУЙТЕ:</span><button type="button" data-query="Найди поход рядом с Греноблем на 4 часа, с озером, не слишком сложный">Озеро · до 4 часов</button><button type="button" data-query="Легкая прогулка у озера вокруг Гренобля до 2 часов">Легко · до 2 часов</button><button type="button" data-query="Хочу сложный горный маршрут с озером на целый день рядом с Греноблем">Сложный · на весь день</button></div>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+      <section id="results" class="results" hidden aria-live="polite"></section>
+    </section>
+
+    <section class="how" id="how"><div class="how-title"><span class="kicker">КАК ЭТО РАБОТАЕТ</span><h2>От идеи —<br>к маршруту.</h2></div><div class="steps"><div><span>01</span><h3>Понимаем запрос</h3><p>Локальная AI-модель извлекает время, сложность и пожелания из обычного текста.</p></div><div><span>02</span><h3>Проверяем данные</h3><p>Через MCP получаем маршруты с источниками и прогноз для выбранной даты.</p></div><div><span>03</span><h3>Выбираем маршрут</h3><p>Модель ранжирует кандидатов; характеристики и отличия от запроса выводятся из проверенных данных.</p></div></div></section>
+  </main>
+  <footer><div class="brand">⌁ Тропа<span class="brand-dot">.</span></div><p>Учебный проект · Маршруты: Grenoble Alpes Tourisme · Прогноз: Open-Meteo</p><p>Погода у точки старта не гарантирует безопасность тропы. Проверяйте условия перед выходом.</p></footer>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
