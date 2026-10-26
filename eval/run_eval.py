@@ -16,6 +16,7 @@ CASES = [
     {"id": "no_exact", "query": "Найди легкий поход с озером до 30 минут у Гренобля", "date": "2026-10-27", "expect_no_exact": True},
     {"id": "forecast_horizon", "query": "Подбери умеренный маршрут у озера близ Гренобля до 4 часов", "date": "2026-11-20", "expect_no_forecast": True},
     {"id": "ascent_400", "query": "найди маршрут с высотой 400 метров", "date": "2026-10-27", "target_ascent_m": 400},
+    {"id": "longer_than_2h", "query": "найди маршруты длительностью больше 2 часов", "date": "2026-10-27", "min_minutes_exclusive": 120, "expect_exact": True},
 ]
 
 
@@ -28,12 +29,19 @@ def check(case, response):
         problems.append("empty route list")
     if case.get("expect_no_exact") and response.get("exact_match"):
         problems.append("claimed exact match for impossible request")
+    if case.get("expect_exact") and not response.get("exact_match"):
+        problems.append("missed existing exact matches")
     if case.get("target_ascent_m"):
         trace = next((x for x in response.get("trace", []) if x.get("stage") == "LLM 1"), {})
         if trace.get("result", {}).get("target_ascent_m") != case["target_ascent_m"]:
             problems.append("elevation gain not extracted")
         if routes and abs(routes[0]["ascent_m"] - case["target_ascent_m"]) > 50:
             problems.append("top route elevation gain too far from target")
+    if case.get("min_minutes_exclusive"):
+        trace = next((x for x in response.get("trace", []) if x.get("stage") == "LLM 1"), {})
+        parsed = trace.get("result", {})
+        if parsed.get("min_hours") != case["min_minutes_exclusive"] / 60 or not parsed.get("min_hours_exclusive"):
+            problems.append("strict lower duration bound not extracted")
     order = {"easy": 0, "moderate": 1, "hard": 2}
     for route in routes:
         original = CATALOG.get(route.get("id"))
@@ -44,6 +52,8 @@ def check(case, response):
             if route.get(key) != original[key]:
                 problems.append(f"changed catalogue field {key} for {route['id']}")
         if response.get("exact_match"):
+            if case.get("min_minutes_exclusive") and route["duration_minutes"] <= case["min_minutes_exclusive"]:
+                problems.append(f"duration does not exceed request: {route['id']}")
             if case.get("max_minutes") and route["duration_minutes"] > case["max_minutes"]:
                 problems.append(f"duration exceeds request: {route['id']}")
             if case.get("max_difficulty") is not None and order[route["difficulty"]] > case["max_difficulty"]:

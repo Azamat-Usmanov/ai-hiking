@@ -17,6 +17,8 @@ from app.ranking import score_route
 
 class Intent(BaseModel):
     max_hours: float = Field(ge=0, le=24)
+    min_hours: float = Field(default=0, ge=0, le=24)
+    min_hours_exclusive: bool = False
     difficulty: Literal["easy", "moderate", "hard", "any"]
     lake: bool
     target_ascent_m: int = Field(default=0, ge=0, le=3000)
@@ -74,13 +76,22 @@ def explicit_ascent(query: str) -> int | None:
     return int(match[1]) if match else None
 
 
-def explicit_hours(query: str) -> float | None:
-    """Normalize numeric minutes/hours so 30 minutes cannot become 30 hours."""
-    match = re.search(r"(\d+(?:[.,]\d+)?)\s*(минут\w*|мин\b|час\w*|ч\b)", query.casefold())
-    if not match:
-        return None
-    amount = float(match[1].replace(",", "."))
-    return amount / 60 if match[2].startswith("мин") else amount
+def explicit_duration_bounds(query: str) -> dict[str, float | bool]:
+    """Keep numeric lower and upper limits distinct, including strict 'more than'."""
+    bounds: dict[str, float | bool] = {}
+    pattern = r"(\d+(?:[.,]\d+)?)\s*(минут\w*|мин\b|час\w*|ч\b)"
+    for match in re.finditer(pattern, query.casefold()):
+        amount = float(match[1].replace(",", "."))
+        hours = amount / 60 if match[2].startswith("мин") else amount
+        prefix = query.casefold()[max(0, match.start() - 35):match.start()]
+        if re.search(r"(?:не\s+(?:больше|дольше|свыше|более)|до|максимум)\s*$", prefix):
+            bounds["max_hours"] = hours
+        elif re.search(r"(?:больше|дольше|свыше|более|от|минимум|не\s+менее|не\s+меньше)\s*$", prefix):
+            bounds["min_hours"] = hours
+            bounds["min_hours_exclusive"] = bool(re.search(r"(?:больше|дольше|свыше|более)\s*$", prefix))
+        else:
+            bounds["max_hours"] = hours
+    return bounds
 
 
 def mcp_payload(result) -> dict:
@@ -104,7 +115,10 @@ async def build_plan(query: str, supplied_date: str | None = None) -> dict:
                 "Ты извлекаешь параметры пешего похода из запроса. Верни только JSON по схеме. "
                 "'Не слишком сложный' означает moderate. 'Легкий' означает easy. "
                 "Озеро и пруд — разные объекты. Не добавляй отсутствующих пожеланий. "
-                "Если время не указано, max_hours=0; если сложность не указана, difficulty=any. "
+                "Если время не указано, max_hours=0 и min_hours=0; если сложность не указана, difficulty=any. "
+                "'Больше 2 часов' означает min_hours=2, min_hours_exclusive=true, max_hours=0. "
+                "'Не менее 2 часов' означает min_hours=2, min_hours_exclusive=false. "
+                "'До 2 часов' означает max_hours=2, min_hours=0. "
                 "Если пользователь говорит о наборе высоты или подъёме в метрах, запиши число в target_ascent_m; "
                 "иначе target_ascent_m=0. Высота не означает длительность. "
                 "Дату не извлекай: она задаётся отдельно в интерфейсе.",
@@ -117,11 +131,23 @@ async def build_plan(query: str, supplied_date: str | None = None) -> dict:
         if not isinstance(parsed, dict):
             parsed = {}
             parse_fallback = True
-        hours_from_text = explicit_hours(query)
-        if hours_from_text is not None:
-            parsed["max_hours"] = hours_from_text
-        elif not isinstance(parsed.get("max_hours"), (int, float)) or not 0 <= parsed["max_hours"] <= 24:
+        bounds_from_text = explicit_duration_bounds(query)
+        if "min_hours" in bounds_from_text:
+            parsed["min_hours"] = bounds_from_text["min_hours"]
+            parsed["min_hours_exclusive"] = bounds_from_text["min_hours_exclusive"]
+            if "max_hours" not in bounds_from_text:
+                parsed["max_hours"] = 0
+        if "max_hours" in bounds_from_text:
+            parsed["max_hours"] = bounds_from_text["max_hours"]
+            if "min_hours" not in bounds_from_text:
+                parsed["min_hours"] = 0
+                parsed["min_hours_exclusive"] = False
+        if not isinstance(parsed.get("max_hours"), (int, float)) or not 0 <= parsed["max_hours"] <= 24:
             parsed["max_hours"] = 0
+        if not isinstance(parsed.get("min_hours"), (int, float)) or not 0 <= parsed["min_hours"] <= 24:
+            parsed["min_hours"] = 0
+        if not isinstance(parsed.get("min_hours_exclusive"), bool):
+            parsed["min_hours_exclusive"] = False
         lowered = query.casefold()
         if re.search(r"не\s+слишком\s+сложн|умерен", lowered):
             fallback_difficulty = "moderate"
@@ -153,7 +179,9 @@ async def build_plan(query: str, supplied_date: str | None = None) -> dict:
 
         server = StdioServerParameters(command=sys.executable, args=["-m", "app.mcp_server"], env=os.environ.copy())
         async with Client(server) as mcp:
-            args = {"max_hours": intent.max_hours or None, "difficulty": intent.difficulty, "lake": intent.lake,
+            args = {"max_hours": intent.max_hours or None, "min_hours": intent.min_hours or None,
+                    "min_hours_exclusive": intent.min_hours_exclusive,
+                    "difficulty": intent.difficulty, "lake": intent.lake,
                     "target_ascent_m": intent.target_ascent_m or None, "trip_date": trip_date}
             found = mcp_payload(await mcp.call_tool("search_routes", args))
             trace.append({"stage": "MCP", "tool": "search_routes", "arguments": args, "result": {
