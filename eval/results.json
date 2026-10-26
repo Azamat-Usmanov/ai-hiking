@@ -2,7 +2,7 @@
   {
     "id": "lake_4h_moderate",
     "status": "passed",
-    "seconds": 3.1,
+    "seconds": 17.8,
     "route_ids": [
       "oeilly-luitel"
     ],
@@ -15,7 +15,7 @@
   {
     "id": "easy_2h",
     "status": "passed",
-    "seconds": 8.6,
+    "seconds": 9.2,
     "route_ids": [
       "premol-luitel"
     ],
@@ -28,7 +28,7 @@
   {
     "id": "no_exact",
     "status": "passed",
-    "seconds": 12.9,
+    "seconds": 14.2,
     "route_ids": [
       "premol-luitel"
     ],
@@ -41,7 +41,7 @@
   {
     "id": "forecast_horizon",
     "status": "passed",
-    "seconds": 7.9,
+    "seconds": 8.6,
     "route_ids": [
       "oeilly-luitel"
     ],

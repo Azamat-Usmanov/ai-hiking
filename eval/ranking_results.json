@@ -1,0 +1,91 @@
+{
+  "metric": "NDCG@3",
+  "mean": 0.853,
+  "cases": [
+    {
+      "query": "Поход к озеру до 4 часов, не слишком сложный",
+      "ndcg_at_3": 1.0,
+      "ranking": [
+        "oeilly-luitel",
+        "premol-luitel",
+        "jarry-pond"
+      ],
+      "grades_at_3": [
+        3,
+        2,
+        0
+      ]
+    },
+    {
+      "query": "Лёгкая прогулка до двух часов через лес",
+      "ndcg_at_3": 0.65,
+      "ranking": [
+        "belvedere-vizille",
+        "petit-sentier-prairie",
+        "vignasses"
+      ],
+      "grades_at_3": [
+        2,
+        2,
+        3
+      ]
+    },
+    {
+      "query": "Панорамный поход около трёх часов, умеренный",
+      "ndcg_at_3": 1.0,
+      "ranking": [
+        "emeindras",
+        "mont-rachais",
+        "ecoutoux"
+      ],
+      "grades_at_3": [
+        3,
+        3,
+        2
+      ]
+    },
+    {
+      "query": "Водопад до трёх часов, не слишком сложный",
+      "ndcg_at_3": 1.0,
+      "ranking": [
+        "cirque-prevourey",
+        "cote-charvet",
+        "ecoutoux"
+      ],
+      "grades_at_3": [
+        3,
+        0,
+        0
+      ]
+    },
+    {
+      "query": "Сложный поход к озеру до семи часов, но без технических участков",
+      "ndcg_at_3": 0.47,
+      "ranking": [
+        "quirlies",
+        "luitel-long",
+        "lac-blanc"
+      ],
+      "grades_at_3": [
+        0,
+        3,
+        0
+      ]
+    },
+    {
+      "query": "Короткая лёгкая прогулка с панорамой",
+      "ndcg_at_3": 1.0,
+      "ranking": [
+        "belvedere-vizille",
+        "remparts-uriage",
+        "vignasses"
+      ],
+      "grades_at_3": [
+        3,
+        2,
+        0
+      ]
+    }
+  ],
+  "notes": "Offline, manually graded candidates (0–3), neutral weather; does not measure LLM parsing or live forecast."
+}

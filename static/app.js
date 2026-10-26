@@ -32,7 +32,14 @@ function weatherText(w) {
 function makeCard(route) {
   const card = el('article', 'route-card');
   const visual = el('div', 'route-visual');
-  visual.append(el('small', '', 'ИЛЛЮСТРАЦИЯ АЛЬП · НЕ ФОТО МАРШРУТА'));
+  if (route.photo) {
+    visual.style.backgroundImage = `linear-gradient(0deg,rgba(10,34,35,.75),transparent 65%),url('${route.photo.path}')`;
+    const credit = el('a', 'photo-credit', `${route.photo.caption} · ${route.photo.author} · ${route.photo.license} ↗`);
+    credit.href = route.photo.source_url; credit.target = '_blank'; credit.rel = 'noopener noreferrer';
+    visual.append(credit);
+  } else {
+    visual.append(el('small', '', 'ИЛЛЮСТРАЦИЯ АЛЬП · НЕ ФОТО МАРШРУТА'));
+  }
   const content = el('div', 'route-content');
   content.append(el('h4', '', route.name));
   const meta = el('div', 'route-meta');
@@ -41,6 +48,7 @@ function makeCard(route) {
     `${route.distance_km} км`, `↑ ${route.ascent_m} м`,
     ({easy:'Легкий', moderate:'Умеренный', hard:'Сложный'})[route.difficulty]
   ].forEach(text => meta.append(el('span', '', text)));
+  if (Number.isFinite(route.relevance_score)) meta.append(el('span', 'score', `${Math.round(route.relevance_score)}/100 · соответствие`));
   content.append(meta, el('p', '', route.reason));
   if (route.tradeoff || route.mismatches.length) content.append(el('p', 'tradeoff', route.tradeoff || `Отличие от запроса: ${route.mismatches.join(', ')}.`));
   content.append(el('div', 'weather', `Прогноз у старта: ${weatherText(route.weather)}`));

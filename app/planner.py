@@ -11,12 +11,14 @@ from zoneinfo import ZoneInfo
 import httpx
 from mcp import Client, StdioServerParameters
 from pydantic import BaseModel, Field, ValidationError
+from app.ranking import score_route
 
 
 class Intent(BaseModel):
     max_hours: float = Field(ge=0, le=24)
     difficulty: Literal["easy", "moderate", "hard", "any"]
     lake: bool
+    features: list[Literal["лес", "панорама", "водопад", "луга", "история"]] = Field(default_factory=list)
 
 
 class Decision(BaseModel):
@@ -69,7 +71,8 @@ async def build_plan(query: str, supplied_date: str | None = None) -> dict:
             "Ты извлекаешь параметры пешего похода из запроса. Верни только JSON по схеме. "
             "'Не слишком сложный' означает moderate. 'Легкий' означает easy. "
             "Озеро и пруд — разные объекты. Не добавляй отсутствующих пожеланий. "
-            "Если время не указано, max_hours=0. Дату не извлекай: она задаётся отдельно в интерфейсе.",
+            "Если время не указано, max_hours=0. Дату не извлекай: она задаётся отдельно в интерфейсе. "
+            "Извлекай только явно запрошенные признаки из списка features; не додумывай их.",
             f"Сегодня {today}. Запрос: {query}", Intent.model_json_schema(), 600,
         )
         intent = Intent.model_validate(parsed)
@@ -88,7 +91,7 @@ async def build_plan(query: str, supplied_date: str | None = None) -> dict:
                 "exact": [{"id": r["id"], "duration_minutes": r["duration_minutes"], "difficulty": r["difficulty"]} for r in found["exact"]],
                 "alternatives": [{"id": r["id"], "mismatches": r["mismatches"]} for r in found["alternatives"]],
             }})
-            candidates = found["exact"][:3] if found["exact"] else found["alternatives"][:3]
+            candidates = found["exact"][:5] if found["exact"] else found["alternatives"][:3]
             if not candidates:
                 return {"status": "no_routes", "message": "Маршруты по запросу не найдены.", "routes": [], "trace": trace}
             ids = [r["id"] for r in candidates]
@@ -96,6 +99,9 @@ async def build_plan(query: str, supplied_date: str | None = None) -> dict:
             forecast = mcp_payload(await mcp.call_tool("get_weather", weather_args))
             trace.append({"stage": "MCP", "tool": "get_weather", "arguments": weather_args, "result": forecast})
 
+        ranked = {r["id"]: score_route(r, intent.model_dump(), forecast.get("routes", {}).get(r["id"])) for r in candidates}
+        candidates.sort(key=lambda r: (-ranked[r["id"]]["score"], r["id"]))
+        trace.append({"stage": "Ranking", "action": "Оценка соответствия 0–100", "result": ranked})
         payload = {
             "request": query, "date": trip_date, "intent": intent.model_dump(),
             "exact_match_available": bool(found["exact"]),
@@ -103,7 +109,8 @@ async def build_plan(query: str, supplied_date: str | None = None) -> dict:
                 {"id": r["id"], "duration_minutes": r["duration_minutes"],
                  "ascent_m": r["ascent_m"], "difficulty": r["difficulty"],
                  "lake": r["lake"], "mismatches": r["mismatches"],
-                 "features": r["features"], "weather": forecast.get("routes", {}).get(r["id"], {})}
+                 "features": r["features"], "weather": forecast.get("routes", {}).get(r["id"], {}),
+                 "relevance_score": ranked[r["id"]]["score"]}
                 for r in candidates
             ],
         }
@@ -113,7 +120,7 @@ async def build_plan(query: str, supplied_date: str | None = None) -> dict:
         schema["properties"]["route_ids"]["maxItems"] = 3
         decision_data = await llm_json(
             "Ты выбираешь и ранжируешь до трёх пеших маршрутов. Верни только route_ids из candidates, "
-            "лучший первым. Учитывай близость длительности к запросу, сложность, озеро и погоду. "
+            "лучший первым. Учитывай relevance_score, близость длительности к запросу, сложность, озеро и погоду. "
             "Не выбирай сложный маршрут как легкий. Если точных вариантов нет, предложи ближайшие альтернативы.",
             json.dumps(payload, ensure_ascii=False), schema, 180,
         )
@@ -131,9 +138,13 @@ async def build_plan(query: str, supplied_date: str | None = None) -> dict:
             features = "есть озеро" if route["lake"] else "озера на маршруте нет"
             reason = f"По данным источника, это {level} маршрут на {duration_text}; {features}."
             tradeoff = "Отличие от запроса: " + ", ".join(route["mismatches"]) + "." if route["mismatches"] else ""
-            route_cards.append({**route, "reason": reason, "tradeoff": tradeoff, "weather": forecast.get("routes", {}).get(route_id, {"status": forecast["status"]})})
+            route_cards.append({**route, "reason": reason, "tradeoff": tradeoff,
+                                "relevance_score": ranked[route_id]["score"],
+                                "score_components": ranked[route_id]["components"],
+                                "weather": forecast.get("routes", {}).get(route_id, {"status": forecast["status"]})})
         if not route_cards:
             raise RuntimeError("LLM returned no valid route IDs")
+        route_cards.sort(key=lambda r: (-r["relevance_score"], r["id"]))
         trace.append({"stage": "LLM 2", "action": "Выбор и ранжирование", "result": [r["id"] for r in route_cards]})
         message = ("Нашёл маршруты, которые соответствуют указанным ограничениям." if found["exact"]
                    else "Точного совпадения нет. Ниже ближайшие варианты и их отличия от запроса.")

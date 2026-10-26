@@ -43,7 +43,9 @@ async def health():
             response = await client.get(f"{OLLAMA_URL}/api/tags")
             response.raise_for_status()
             models = [m["name"] for m in response.json().get("models", [])]
-        return {"status": "ok" if any(OLLAMA_MODEL in name for name in models) else "model_missing", "model": OLLAMA_MODEL}
+        revision_file = ROOT / ".deploy-commit"
+        revision = revision_file.read_text().strip() if revision_file.exists() else "development"
+        return {"status": "ok" if any(OLLAMA_MODEL in name for name in models) else "model_missing", "model": OLLAMA_MODEL, "revision": revision}
     except httpx.HTTPError:
         return {"status": "model_unavailable", "model": OLLAMA_MODEL}
 
