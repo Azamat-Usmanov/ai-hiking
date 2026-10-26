@@ -15,13 +15,15 @@ DIFFICULTY = {"easy": 0, "moderate": 1, "hard": 2}
 
 
 @mcp.tool()
-def search_routes(max_hours: float | None = None, difficulty: str = "any", lake: bool = False, trip_date: str | None = None) -> dict:
+def search_routes(max_hours: float | None = None, difficulty: str = "any", lake: bool = False,
+                  target_ascent_m: int | None = None, trip_date: str | None = None) -> dict:
     """Find sourced hiking routes around Grenoble. Return exact matches and clearly marked alternatives.
 
     Args:
         max_hours: Maximum walking time in hours, or null if unspecified.
         difficulty: Highest allowed difficulty: easy, moderate, hard, or any.
         lake: Whether the route must reach a lake (a pond does not count).
+        target_ascent_m: Desired elevation gain in metres; ranked by proximity, not a hard limit.
         trip_date: Local date in YYYY-MM-DD for checking published seasonal windows.
     """
     max_minutes = max_hours * 60 if max_hours else None
@@ -48,8 +50,14 @@ def search_routes(max_hours: float | None = None, difficulty: str = "any", lake:
             alternatives.append(item)
         else:
             exact.append(item)
-    exact.sort(key=lambda r: (abs(r["duration_minutes"] - (max_minutes or r["duration_minutes"])), r["ascent_m"]))
-    alternatives.sort(key=lambda r: (len(r["mismatches"]), abs(r["duration_minutes"] - (max_minutes or r["duration_minutes"]))))
+    def closeness(route):
+        if target_ascent_m:
+            return (abs(route["ascent_m"] - target_ascent_m),
+                    abs(route["duration_minutes"] - max_minutes) if max_minutes else 0)
+        return (abs(route["duration_minutes"] - max_minutes) if max_minutes else 0, route["ascent_m"])
+
+    exact.sort(key=closeness)
+    alternatives.sort(key=lambda r: (len(r["mismatches"]), closeness(r)))
     return {"exact": exact[:5], "alternatives": alternatives[:3], "total_catalogue": len(all_routes())}
 
 

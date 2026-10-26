@@ -15,6 +15,7 @@ CASES = [
     {"id": "easy_2h", "query": "Легкая прогулка к озеру у Гренобля до 2 часов", "date": "2026-10-27", "max_minutes": 120, "max_difficulty": 0, "lake": True},
     {"id": "no_exact", "query": "Найди легкий поход с озером до 30 минут у Гренобля", "date": "2026-10-27", "expect_no_exact": True},
     {"id": "forecast_horizon", "query": "Подбери умеренный маршрут у озера близ Гренобля до 4 часов", "date": "2026-11-20", "expect_no_forecast": True},
+    {"id": "ascent_400", "query": "найди маршрут с высотой 400 метров", "date": "2026-10-27", "target_ascent_m": 400},
 ]
 
 
@@ -27,6 +28,12 @@ def check(case, response):
         problems.append("empty route list")
     if case.get("expect_no_exact") and response.get("exact_match"):
         problems.append("claimed exact match for impossible request")
+    if case.get("target_ascent_m"):
+        trace = next((x for x in response.get("trace", []) if x.get("stage") == "LLM 1"), {})
+        if trace.get("result", {}).get("target_ascent_m") != case["target_ascent_m"]:
+            problems.append("elevation gain not extracted")
+        if routes and abs(routes[0]["ascent_m"] - case["target_ascent_m"]) > 50:
+            problems.append("top route elevation gain too far from target")
     order = {"easy": 0, "moderate": 1, "hard": 2}
     for route in routes:
         original = CATALOG.get(route.get("id"))
