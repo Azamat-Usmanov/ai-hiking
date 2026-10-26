@@ -3,6 +3,7 @@
 import asyncio
 import json
 import os
+import re
 import sys
 from datetime import date, datetime
 from typing import Literal
@@ -18,7 +19,7 @@ class Intent(BaseModel):
     max_hours: float = Field(ge=0, le=24)
     difficulty: Literal["easy", "moderate", "hard", "any"]
     lake: bool
-    features: list[Literal["лес", "панорама", "водопад", "луга", "история"]] = Field(default_factory=list)
+    target_ascent_m: int = Field(default=0, ge=0, le=3000)
 
 
 class Decision(BaseModel):
@@ -32,23 +33,54 @@ MODEL_LOCK = asyncio.Semaphore(1)
 
 async def llm_json(system: str, user: str, schema: dict, max_tokens: int = 600) -> dict:
     async with httpx.AsyncClient(timeout=httpx.Timeout(180.0, connect=5.0)) as client:
-        response = await client.post(
-            f"{OLLAMA_URL}/api/chat",
-            json={
-                "model": OLLAMA_MODEL,
-                "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
-                "format": schema,
-                "stream": False,
-                "think": False,
-                "options": {"temperature": 0, "num_ctx": 4096, "num_predict": max_tokens},
-            },
-        )
-        response.raise_for_status()
-        content = response.json()["message"]["content"]
-        try:
-            return json.loads(content)
-        except json.JSONDecodeError as exc:
-            raise RuntimeError(f"Ollama returned invalid JSON: {content[:300]!r}") from exc
+        for attempt in range(2):
+            response = await client.post(
+                f"{OLLAMA_URL}/api/chat",
+                json={
+                    "model": OLLAMA_MODEL,
+                    "messages": [
+                        {"role": "system", "content": system + (" Ответь одним коротким JSON без повторов." if attempt else "")},
+                        {"role": "user", "content": user},
+                    ],
+                    "format": schema,
+                    "stream": False,
+                    "think": False,
+                    "options": {"temperature": 0, "repeat_penalty": 1.15 if attempt else 1.0,
+                                "num_ctx": 4096, "num_predict": max_tokens if not attempt else min(max_tokens, 240)},
+                },
+            )
+            response.raise_for_status()
+            content = response.json()["message"]["content"]
+            try:
+                return json.loads(content)
+            except json.JSONDecodeError:
+                continue
+        raise RuntimeError("Ollama returned invalid JSON twice")
+
+
+def requested_features(query: str) -> list[str]:
+    """Keep feature extraction out of the model's unbounded JSON array."""
+    patterns = {"лес": r"лес|рощ", "панорама": r"панорам|видов", "водопад": r"водопад",
+                "луга": r"луг|лугов|альпийск.*пастбищ", "история": r"истори|крепост|форт"}
+    lowered = query.casefold()
+    return [name for name, pattern in patterns.items() if re.search(pattern, lowered)]
+
+
+def explicit_ascent(query: str) -> int | None:
+    """Recognize a stated elevation gain if the small LLM leaves it empty."""
+    lowered = query.casefold()
+    pattern = r"(?:набор\w*\s+высот\w*|подъ[её]м\w*|высот\w*)\s*(?:около\s*|примерно\s*)?(\d{2,4})\s*(?:м\b|метр)"
+    match = re.search(pattern, lowered)
+    return int(match[1]) if match else None
+
+
+def explicit_hours(query: str) -> float | None:
+    """Normalize numeric minutes/hours so 30 minutes cannot become 30 hours."""
+    match = re.search(r"(\d+(?:[.,]\d+)?)\s*(минут\w*|мин\b|час\w*|ч\b)", query.casefold())
+    if not match:
+        return None
+    amount = float(match[1].replace(",", "."))
+    return amount / 60 if match[2].startswith("мин") else amount
 
 
 def mcp_payload(result) -> dict:
@@ -67,25 +99,62 @@ async def build_plan(query: str, supplied_date: str | None = None) -> dict:
     today = datetime.now(ZoneInfo("Europe/Paris")).date().isoformat()
     trace = []
     async with MODEL_LOCK:
-        parsed = await llm_json(
-            "Ты извлекаешь параметры пешего похода из запроса. Верни только JSON по схеме. "
-            "'Не слишком сложный' означает moderate. 'Легкий' означает easy. "
-            "Озеро и пруд — разные объекты. Не добавляй отсутствующих пожеланий. "
-            "Если время не указано, max_hours=0. Дату не извлекай: она задаётся отдельно в интерфейсе. "
-            "Извлекай только явно запрошенные признаки из списка features; не додумывай их.",
-            f"Сегодня {today}. Запрос: {query}", Intent.model_json_schema(), 600,
-        )
+        try:
+            parsed = await llm_json(
+                "Ты извлекаешь параметры пешего похода из запроса. Верни только JSON по схеме. "
+                "'Не слишком сложный' означает moderate. 'Легкий' означает easy. "
+                "Озеро и пруд — разные объекты. Не добавляй отсутствующих пожеланий. "
+                "Если время не указано, max_hours=0; если сложность не указана, difficulty=any. "
+                "Если пользователь говорит о наборе высоты или подъёме в метрах, запиши число в target_ascent_m; "
+                "иначе target_ascent_m=0. Высота не означает длительность. "
+                "Дату не извлекай: она задаётся отдельно в интерфейсе.",
+                f"Сегодня {today}. Запрос: {query}", Intent.model_json_schema(), 220,
+            )
+            parse_fallback = False
+        except RuntimeError:
+            parsed = {}
+            parse_fallback = True
+        if not isinstance(parsed, dict):
+            parsed = {}
+            parse_fallback = True
+        hours_from_text = explicit_hours(query)
+        if hours_from_text is not None:
+            parsed["max_hours"] = hours_from_text
+        elif not isinstance(parsed.get("max_hours"), (int, float)) or not 0 <= parsed["max_hours"] <= 24:
+            parsed["max_hours"] = 0
+        lowered = query.casefold()
+        if re.search(r"не\s+слишком\s+сложн|умерен", lowered):
+            fallback_difficulty = "moderate"
+        elif re.search(r"л[её]гк|прост|начинающ", lowered):
+            fallback_difficulty = "easy"
+        elif re.search(r"сложн|трудн", lowered):
+            fallback_difficulty = "hard"
+        else:
+            fallback_difficulty = "any"
+        if parsed.get("difficulty") not in {"easy", "moderate", "hard", "any"}:
+            parsed["difficulty"] = fallback_difficulty
+        if not isinstance(parsed.get("lake"), bool):
+            parsed["lake"] = bool(re.search(r"озер", lowered))
+        if not isinstance(parsed.get("target_ascent_m"), int) or not 0 <= parsed["target_ascent_m"] <= 3000:
+            parsed["target_ascent_m"] = 0
         intent = Intent.model_validate(parsed)
+        if fallback_difficulty == "any":
+            intent.difficulty = "any"
+        ascent_from_text = explicit_ascent(query)
+        if ascent_from_text is not None and ascent_from_text <= 3000:
+            intent.target_ascent_m = ascent_from_text
+        intent_data = {**intent.model_dump(), "features": requested_features(query)}
         trip_date = supplied_date or today
         try:
             date.fromisoformat(trip_date)
         except ValueError:
             trip_date = today
-        trace.append({"stage": "LLM 1", "action": "Разбор запроса", "result": intent.model_dump()})
+        trace.append({"stage": "LLM 1", "action": "Разбор запроса" + (" (резервный разбор после сбоя JSON)" if parse_fallback else ""), "result": intent_data})
 
         server = StdioServerParameters(command=sys.executable, args=["-m", "app.mcp_server"], env=os.environ.copy())
         async with Client(server) as mcp:
-            args = {"max_hours": intent.max_hours or None, "difficulty": intent.difficulty, "lake": intent.lake, "trip_date": trip_date}
+            args = {"max_hours": intent.max_hours or None, "difficulty": intent.difficulty, "lake": intent.lake,
+                    "target_ascent_m": intent.target_ascent_m or None, "trip_date": trip_date}
             found = mcp_payload(await mcp.call_tool("search_routes", args))
             trace.append({"stage": "MCP", "tool": "search_routes", "arguments": args, "result": {
                 "exact": [{"id": r["id"], "duration_minutes": r["duration_minutes"], "difficulty": r["difficulty"]} for r in found["exact"]],
@@ -99,11 +168,11 @@ async def build_plan(query: str, supplied_date: str | None = None) -> dict:
             forecast = mcp_payload(await mcp.call_tool("get_weather", weather_args))
             trace.append({"stage": "MCP", "tool": "get_weather", "arguments": weather_args, "result": forecast})
 
-        ranked = {r["id"]: score_route(r, intent.model_dump(), forecast.get("routes", {}).get(r["id"])) for r in candidates}
+        ranked = {r["id"]: score_route(r, intent_data, forecast.get("routes", {}).get(r["id"])) for r in candidates}
         candidates.sort(key=lambda r: (-ranked[r["id"]]["score"], r["id"]))
         trace.append({"stage": "Ranking", "action": "Оценка соответствия 0–100", "result": ranked})
         payload = {
-            "request": query, "date": trip_date, "intent": intent.model_dump(),
+            "request": query, "date": trip_date, "intent": intent_data,
             "exact_match_available": bool(found["exact"]),
             "candidates": [
                 {"id": r["id"], "duration_minutes": r["duration_minutes"],
@@ -118,13 +187,18 @@ async def build_plan(query: str, supplied_date: str | None = None) -> dict:
         schema["properties"]["route_ids"]["items"]["enum"] = ids
         schema["properties"]["route_ids"]["minItems"] = 1
         schema["properties"]["route_ids"]["maxItems"] = 3
-        decision_data = await llm_json(
-            "Ты выбираешь и ранжируешь до трёх пеших маршрутов. Верни только route_ids из candidates, "
-            "лучший первым. Учитывай relevance_score, близость длительности к запросу, сложность, озеро и погоду. "
-            "Не выбирай сложный маршрут как легкий. Если точных вариантов нет, предложи ближайшие альтернативы.",
-            json.dumps(payload, ensure_ascii=False), schema, 180,
-        )
-        decision = Decision.model_validate(decision_data)
+        try:
+            decision_data = await llm_json(
+                "Ты выбираешь и ранжируешь до трёх пеших маршрутов. Верни только route_ids из candidates, "
+                "лучший первым. Учитывай relevance_score, близость длительности и набора высоты к запросу, сложность, озеро и погоду. "
+                "Не выбирай сложный маршрут как легкий. Если точных вариантов нет, предложи ближайшие альтернативы.",
+                json.dumps(payload, ensure_ascii=False), schema, 180,
+            )
+            decision = Decision.model_validate(decision_data)
+            decision_fallback = False
+        except (RuntimeError, ValidationError):
+            decision = Decision(route_ids=[r["id"] for r in candidates[:3]])
+            decision_fallback = True
         allowed = {r["id"]: r for r in candidates}
         route_cards = []
         for route_id in decision.route_ids[:3]:
@@ -137,15 +211,24 @@ async def build_plan(query: str, supplied_date: str | None = None) -> dict:
             level = {"easy": "лёгкий", "moderate": "умеренный", "hard": "сложный"}[route["difficulty"]]
             features = "есть озеро" if route["lake"] else "озера на маршруте нет"
             reason = f"По данным источника, это {level} маршрут на {duration_text}; {features}."
+            if intent.target_ascent_m:
+                reason += f" Набор высоты — {route['ascent_m']} м (запрошено около {intent.target_ascent_m} м)."
             tradeoff = "Отличие от запроса: " + ", ".join(route["mismatches"]) + "." if route["mismatches"] else ""
             route_cards.append({**route, "reason": reason, "tradeoff": tradeoff,
                                 "relevance_score": ranked[route_id]["score"],
                                 "score_components": ranked[route_id]["components"],
                                 "weather": forecast.get("routes", {}).get(route_id, {"status": forecast["status"]})})
         if not route_cards:
-            raise RuntimeError("LLM returned no valid route IDs")
+            route_cards = [{**r, "reason": "Маршрут выбран по баллу соответствия после некорректного ответа модели.",
+                            "tradeoff": "Отличие от запроса: " + ", ".join(r["mismatches"]) + "." if r["mismatches"] else "",
+                            "relevance_score": ranked[r["id"]]["score"],
+                            "score_components": ranked[r["id"]]["components"],
+                            "weather": forecast.get("routes", {}).get(r["id"], {"status": forecast["status"]})}
+                           for r in candidates[:3]]
+            decision_fallback = True
         route_cards.sort(key=lambda r: (-r["relevance_score"], r["id"]))
-        trace.append({"stage": "LLM 2", "action": "Выбор и ранжирование", "result": [r["id"] for r in route_cards]})
+        trace.append({"stage": "LLM 2", "action": "Выбор и ранжирование" + (" (резервный выбор по баллам)" if decision_fallback else ""),
+                      "result": [r["id"] for r in route_cards]})
         message = ("Нашёл маршруты, которые соответствуют указанным ограничениям." if found["exact"]
                    else "Точного совпадения нет. Ниже ближайшие варианты и их отличия от запроса.")
         if forecast["status"] == "outside_forecast":

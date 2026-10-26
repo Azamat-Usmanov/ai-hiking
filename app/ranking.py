@@ -11,7 +11,11 @@ def score_route(route: dict, intent: dict, weather: dict | None = None) -> dict:
     """
     weather = weather or {}
     target = (intent.get("max_hours") or 0) * 60
-    duration = 35.0 if not target else 35 * max(0.0, 1 - abs(route["duration_minutes"] - target) / max(target, 60))
+    target_ascent = intent.get("target_ascent_m") or 0
+    duration_weight = 20 if target and target_ascent else (0 if target_ascent else 35)
+    ascent_weight = 15 if target and target_ascent else (35 if target_ascent else 0)
+    duration = duration_weight * max(0.0, 1 - abs(route["duration_minutes"] - target) / max(target, 60)) if target else duration_weight
+    ascent = ascent_weight * max(0.0, 1 - abs(route["ascent_m"] - target_ascent) / max(target_ascent, 100)) if target_ascent else 0
     requested_level = intent.get("difficulty", "any")
     difficulty = 25.0 if requested_level == "any" or DIFFICULTY[route["difficulty"]] <= DIFFICULTY[requested_level] else 0.0
     lake = 20.0 if not intent.get("lake") or route["lake"] else 0.0
@@ -24,6 +28,6 @@ def score_route(route: dict, intent: dict, weather: dict | None = None) -> dict:
         weather_points = max(0.0, 10 - rain / 20 - max(0, wind - 20) / 10 - (5 if snow > 0 else 0))
     else:
         weather_points = 5.0
-    parts = {"duration": round(duration, 1), "difficulty": difficulty, "lake": lake,
+    parts = {"duration": round(duration, 1), "ascent": round(ascent, 1), "difficulty": difficulty, "lake": lake,
              "features": round(features, 1), "weather": round(weather_points, 1)}
     return {"score": round(sum(parts.values())), "components": parts}
