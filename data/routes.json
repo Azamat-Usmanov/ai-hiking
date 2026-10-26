@@ -1,51 +1,482 @@
 [
   {
-    "id": "premol-luitel", "name": "От Премоля к озеру Лютель", "name_fr": "De Prémol au Luitel",
-    "area": "Belledonne", "start": "Parking de Prémol", "lat": 45.086884, "lon": 5.847565,
-    "distance_km": 4, "duration_minutes": 95, "ascent_m": 200, "difficulty": "easy", "lake": true,
-    "features": ["озеро", "лес", "природный заповедник"], "type": "круговой",
-    "season": "круглый год при подходящей погоде", "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/de-premol-au-luitel-5586988/"
+    "id": "premol-luitel",
+    "name": "От Премоля к озеру Лютель",
+    "name_fr": "De Prémol au Luitel",
+    "area": "Belledonne",
+    "start": "Parking de Prémol",
+    "lat": 45.086884,
+    "lon": 5.847565,
+    "distance_km": 4,
+    "duration_minutes": 95,
+    "ascent_m": 200,
+    "difficulty": "easy",
+    "lake": true,
+    "features": [
+      "озеро",
+      "лес",
+      "природный заповедник"
+    ],
+    "type": "круговой",
+    "season": "круглый год при подходящей погоде",
+    "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/de-premol-au-luitel-5586988/",
+    "photo": {
+      "path": "/static/assets/lac-luitel.jpg",
+      "caption": "Озеро Лютель — точка маршрута",
+      "author": "Patafisik",
+      "license": "CC BY-SA 4.0",
+      "source_url": "https://commons.wikimedia.org/wiki/File:RN_lac_Luitel_abc6.jpg",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/"
+    }
   },
   {
-    "id": "jarry-pond", "name": "Пруд Жарри", "name_fr": "Randonnée Étang de Jarrie",
-    "area": "Échirolles", "start": "Échirolles", "lat": 45.140461, "lon": 5.725451,
-    "distance_km": 8, "duration_minutes": 180, "ascent_m": 310, "difficulty": "moderate", "lake": false,
-    "features": ["пруд", "природный заповедник"], "type": "круговой",
-    "season": "круглый год в зависимости от погоды", "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/randonnee-etang-de-jarrie-5757506/"
+    "id": "jarry-pond",
+    "name": "Пруд Жарри",
+    "name_fr": "Randonnée Étang de Jarrie",
+    "area": "Échirolles",
+    "start": "Échirolles",
+    "lat": 45.140461,
+    "lon": 5.725451,
+    "distance_km": 8,
+    "duration_minutes": 180,
+    "ascent_m": 310,
+    "difficulty": "moderate",
+    "lake": false,
+    "features": [
+      "пруд",
+      "природный заповедник"
+    ],
+    "type": "круговой",
+    "season": "круглый год в зависимости от погоды",
+    "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/randonnee-etang-de-jarrie-5757506/"
   },
   {
-    "id": "oeilly-luitel", "name": "Пик Уэйи и озеро Лютель", "name_fr": "Le tour du Pic de l’Oeilly, le col de la Madeleine et la réserve naturelle du Luitel",
-    "area": "Belledonne", "start": "Parking de la Réserve Naturelle du Luitel", "lat": 45.087431, "lon": 5.848422,
-    "distance_km": 9, "duration_minutes": 225, "ascent_m": 430, "difficulty": "moderate", "lake": true,
-    "features": ["озеро", "лес", "панорама"], "type": "круговой",
-    "season": "круглый год в зависимости от погоды", "source_url": "https://www.grenoble-tourisme.com/fr/faire/toute-offre-outdoor/marcher-courir/detail/le-tour-du-pic-de-loeilly-le-col-de-la-madeleine-et-la-reserve-naturelle-du-luitel-5587929/"
+    "id": "oeilly-luitel",
+    "name": "Пик Уэйи и озеро Лютель",
+    "name_fr": "Le tour du Pic de l’Oeilly, le col de la Madeleine et la réserve naturelle du Luitel",
+    "area": "Belledonne",
+    "start": "Parking de la Réserve Naturelle du Luitel",
+    "lat": 45.087431,
+    "lon": 5.848422,
+    "distance_km": 9,
+    "duration_minutes": 225,
+    "ascent_m": 430,
+    "difficulty": "moderate",
+    "lake": true,
+    "features": [
+      "озеро",
+      "лес",
+      "панорама"
+    ],
+    "type": "круговой",
+    "season": "круглый год в зависимости от погоды",
+    "source_url": "https://www.grenoble-tourisme.com/fr/faire/toute-offre-outdoor/marcher-courir/detail/le-tour-du-pic-de-loeilly-le-col-de-la-madeleine-et-la-reserve-naturelle-du-luitel-5587929/",
+    "photo": {
+      "path": "/static/assets/lac-luitel.jpg",
+      "caption": "Озеро Лютель — точка маршрута",
+      "author": "Patafisik",
+      "license": "CC BY-SA 4.0",
+      "source_url": "https://commons.wikimedia.org/wiki/File:RN_lac_Luitel_abc6.jpg",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/"
+    }
   },
   {
-    "id": "brouffier", "name": "Озеро Бруфье", "name_fr": "Le Lac de Brouffier par le chemin Bonniot",
-    "area": "Taillefer", "start": "Chemin Bonniot", "lat": 45.036053, "lon": 5.861340,
-    "distance_km": 7, "duration_minutes": 180, "ascent_m": 624, "difficulty": "hard", "lake": true,
-    "features": ["озеро", "панорама"], "type": "круговой",
-    "season": "1 июня — 15 ноября при отсутствии снега", "open_month_day": ["06-01", "11-15"], "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/alpe-du-grand-serre-8261468/circuit-pedestre-le-lac-de-brouffier-par-le-chemin-bonniot-518500/"
+    "id": "brouffier",
+    "name": "Озеро Бруфье",
+    "name_fr": "Le Lac de Brouffier par le chemin Bonniot",
+    "area": "Taillefer",
+    "start": "Chemin Bonniot",
+    "lat": 45.036053,
+    "lon": 5.86134,
+    "distance_km": 7,
+    "duration_minutes": 180,
+    "ascent_m": 624,
+    "difficulty": "hard",
+    "lake": true,
+    "features": [
+      "озеро",
+      "панорама"
+    ],
+    "type": "круговой",
+    "season": "1 июня — 15 ноября при отсутствии снега",
+    "open_month_day": [
+      "06-01",
+      "11-15"
+    ],
+    "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/alpe-du-grand-serre-8261468/circuit-pedestre-le-lac-de-brouffier-par-le-chemin-bonniot-518500/"
   },
   {
-    "id": "luitel-long", "name": "Озеро Лютель из Вольнаве-ле-О", "name_fr": "Randonnée Vaulnaveys-le-Haut - Lac Luitel",
-    "area": "Belledonne", "start": "Vaulnaveys-le-Haut", "lat": 45.118545, "lon": 5.810808,
-    "distance_km": 15, "duration_minutes": 390, "ascent_m": 960, "difficulty": "hard", "lake": true,
-    "features": ["озеро", "лес"], "type": "круговой",
-    "season": "круглый год при подходящей погоде", "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/randonnee-vaulnaveys-le-haut-lac-luitel-775455/"
+    "id": "luitel-long",
+    "name": "Озеро Лютель из Вольнаве-ле-О",
+    "name_fr": "Randonnée Vaulnaveys-le-Haut - Lac Luitel",
+    "area": "Belledonne",
+    "start": "Vaulnaveys-le-Haut",
+    "lat": 45.118545,
+    "lon": 5.810808,
+    "distance_km": 15,
+    "duration_minutes": 390,
+    "ascent_m": 960,
+    "difficulty": "hard",
+    "lake": true,
+    "features": [
+      "озеро",
+      "лес"
+    ],
+    "type": "круговой",
+    "season": "круглый год при подходящей погоде",
+    "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/randonnee-vaulnaveys-le-haut-lac-luitel-775455/",
+    "photo": {
+      "path": "/static/assets/lac-luitel.jpg",
+      "caption": "Озеро Лютель — точка маршрута",
+      "author": "Patafisik",
+      "license": "CC BY-SA 4.0",
+      "source_url": "https://commons.wikimedia.org/wiki/File:RN_lac_Luitel_abc6.jpg",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/"
+    }
   },
   {
-    "id": "lac-blanc", "name": "Белое озеро", "name_fr": "Le Lac Blanc",
-    "area": "Belledonne", "start": "Pré Marcel", "lat": 45.221510, "lon": 5.954940,
-    "distance_km": 15, "duration_minutes": 330, "ascent_m": 1007, "difficulty": "hard", "lake": true,
-    "features": ["озеро", "панорама", "технические участки"], "type": "туда-обратно",
-    "season": "круглый год при подходящей погоде; возможны снежные условия", "source_url": "https://www.grenoble-tourisme.com/fr/faire/toute-offre-outdoor/marcher-courir/detail/le-lac-blanc-4972837/"
+    "id": "lac-blanc",
+    "name": "Белое озеро",
+    "name_fr": "Le Lac Blanc",
+    "area": "Belledonne",
+    "start": "Pré Marcel",
+    "lat": 45.22151,
+    "lon": 5.95494,
+    "distance_km": 15,
+    "duration_minutes": 330,
+    "ascent_m": 1007,
+    "difficulty": "hard",
+    "lake": true,
+    "features": [
+      "озеро",
+      "панорама",
+      "технические участки"
+    ],
+    "type": "туда-обратно",
+    "season": "круглый год при подходящей погоде; возможны снежные условия",
+    "source_url": "https://www.grenoble-tourisme.com/fr/faire/toute-offre-outdoor/marcher-courir/detail/le-lac-blanc-4972837/"
   },
   {
-    "id": "quirlies", "name": "Озеро Кирли", "name_fr": "Le Lac des Quirlies",
-    "area": "Oisans", "start": "Hameau du Perron", "lat": 45.100121, "lon": 6.164636,
-    "distance_km": 14, "duration_minutes": 420, "ascent_m": 1000, "difficulty": "hard", "lake": true,
-    "features": ["озеро", "каскады", "панорама", "технические участки"], "type": "туда-обратно",
-    "season": "1 июня — 31 октября при подходящей погоде и отсутствии снега", "open_month_day": ["06-01", "10-31"], "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/le-lac-des-quirlies-randonnee-depuis-le-perron-clavans-en-haut-oisans-2799171/"
+    "id": "quirlies",
+    "name": "Озеро Кирли",
+    "name_fr": "Le Lac des Quirlies",
+    "area": "Oisans",
+    "start": "Hameau du Perron",
+    "lat": 45.100121,
+    "lon": 6.164636,
+    "distance_km": 14,
+    "duration_minutes": 420,
+    "ascent_m": 1000,
+    "difficulty": "hard",
+    "lake": true,
+    "features": [
+      "озеро",
+      "каскады",
+      "панорама",
+      "технические участки"
+    ],
+    "type": "туда-обратно",
+    "season": "1 июня — 31 октября при подходящей погоде и отсутствии снега",
+    "open_month_day": [
+      "06-01",
+      "10-31"
+    ],
+    "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/le-lac-des-quirlies-randonnee-depuis-le-perron-clavans-en-haut-oisans-2799171/"
+  },
+  {
+    "id": "mont-rachais",
+    "name": "Гора Раше от перевала Ванс",
+    "name_fr": "Le Mont Rachais, un sommet aux versants contrastés, depuis le col de Vence",
+    "area": "Chartreuse",
+    "start": "Col de Vence",
+    "lat": 45.234201,
+    "lon": 5.750927,
+    "distance_km": 7,
+    "duration_minutes": 180,
+    "ascent_m": 400,
+    "difficulty": "moderate",
+    "lake": false,
+    "features": [
+      "лес",
+      "панорама"
+    ],
+    "type": "круговой",
+    "season": "круглый год при подходящей погоде",
+    "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/le-mont-rachais-un-sommet-aux-versants-contrastes-depuis-le-col-de-vence-776672/"
+  },
+  {
+    "id": "emeindras",
+    "name": "Круговой маршрут Эмендра",
+    "name_fr": "Boucle des Emeindras",
+    "area": "Chartreuse",
+    "start": "Place du Sappey-en-Chartreuse",
+    "lat": 45.260037,
+    "lon": 5.777144,
+    "distance_km": 9,
+    "duration_minutes": 180,
+    "ascent_m": 400,
+    "difficulty": "moderate",
+    "lake": false,
+    "features": [
+      "лес",
+      "альпийские луга",
+      "панорама"
+    ],
+    "type": "круговой",
+    "season": "опубликованный сезон 1 мая — 30 ноября; при отсутствии снега",
+    "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/boucle-des-emeindras-5308858/",
+    "open_month_day": [
+      "05-01",
+      "11-30"
+    ]
+  },
+  {
+    "id": "saint-eynard",
+    "name": "Гребни Сен-Эйнара",
+    "name_fr": "Crêtes du St Eynard",
+    "area": "Chartreuse",
+    "start": "Le Sappey-en-Chartreuse",
+    "lat": 45.258,
+    "lon": 5.7786,
+    "distance_km": 8,
+    "duration_minutes": 150,
+    "ascent_m": 300,
+    "difficulty": "moderate",
+    "lake": false,
+    "features": [
+      "лес",
+      "панорама",
+      "форт"
+    ],
+    "type": "круговой",
+    "season": "опубликованный сезон 1 мая — 30 ноября; при отсутствии снега",
+    "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/cretes-du-st-eynard-5308887/",
+    "open_month_day": [
+      "05-01",
+      "11-30"
+    ]
+  },
+  {
+    "id": "ecoutoux",
+    "name": "Вершина Экуту",
+    "name_fr": "L'Ecoutoux",
+    "area": "Chartreuse",
+    "start": "Le Sappey-en-Chartreuse",
+    "lat": 45.260102,
+    "lon": 5.777573,
+    "distance_km": 8,
+    "duration_minutes": 150,
+    "ascent_m": 410,
+    "difficulty": "moderate",
+    "lake": false,
+    "features": [
+      "лес",
+      "панорама"
+    ],
+    "type": "туда-обратно",
+    "season": "опубликованный сезон 1 мая — 30 ноября; при отсутствии снега",
+    "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/l-ecoutoux-5308901/",
+    "open_month_day": [
+      "05-01",
+      "11-30"
+    ]
+  },
+  {
+    "id": "pre-du-playnet",
+    "name": "Луг Пре-дю-Плейне",
+    "name_fr": "Le Pré du Playnet",
+    "area": "Vercors",
+    "start": "Mairie de Miribel-Lanchâtre",
+    "lat": 44.975353,
+    "lon": 5.619926,
+    "distance_km": 7,
+    "duration_minutes": 180,
+    "ascent_m": 510,
+    "difficulty": "hard",
+    "lake": false,
+    "features": [
+      "лес",
+      "панорама",
+      "обрывы"
+    ],
+    "type": "круговой",
+    "season": "круглый год при подходящей погоде",
+    "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/le-pre-du-playnet-4894447/"
+  },
+  {
+    "id": "vignasses",
+    "name": "Тропа Виньяс",
+    "name_fr": "Circuit pédestre des Vignasses",
+    "area": "Uriage",
+    "start": "Maison des Arts, Saint-Martin-d'Uriage",
+    "lat": 45.151856,
+    "lon": 5.836688,
+    "distance_km": 4,
+    "duration_minutes": 105,
+    "ascent_m": 300,
+    "difficulty": "easy",
+    "lake": false,
+    "features": [
+      "лес",
+      "луга",
+      "ручей"
+    ],
+    "type": "круговой",
+    "season": "круглый год при подходящей погоде",
+    "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/circuit-pedestre-des-vignasses-1h45-depart-bourg-st-martin-d-uriage-5153386/"
+  },
+  {
+    "id": "remparts-uriage",
+    "name": "Крепостные стены Юриажа",
+    "name_fr": "Circuit pédestre des remparts",
+    "area": "Uriage",
+    "start": "Office de Tourisme d'Uriage",
+    "lat": 45.143294,
+    "lon": 5.82936,
+    "distance_km": 3,
+    "duration_minutes": 90,
+    "ascent_m": 130,
+    "difficulty": "easy",
+    "lake": false,
+    "features": [
+      "панорама",
+      "история",
+      "парк"
+    ],
+    "type": "круговой",
+    "season": "круглый год при подходящей погоде",
+    "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/circuit-pedestre-des-remparts-1h30-depart-office-de-tourisme-5162729/"
+  },
+  {
+    "id": "cote-charvet",
+    "name": "Бельведер Кот-Шарве",
+    "name_fr": "La côte Charvet un belvédère fabuleux",
+    "area": "Chartreuse",
+    "start": "Collavière, Mont-Saint-Martin",
+    "lat": 45.233454,
+    "lon": 5.751024,
+    "distance_km": 6,
+    "duration_minutes": 150,
+    "ascent_m": 300,
+    "difficulty": "moderate",
+    "lake": false,
+    "features": [
+      "лес",
+      "панорама"
+    ],
+    "type": "круговой",
+    "season": "круглый год при подходящей погоде",
+    "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/la-cote-charvet-un-belvedere-fabuleux-5588374/"
+  },
+  {
+    "id": "cirque-prevourey",
+    "name": "Цирк Превурей и водопад",
+    "name_fr": "Circuit pédestre : Le Cirque de Prévourey",
+    "area": "Taillefer",
+    "start": "Office de Tourisme de l'Alpe-du-Grand-Serre",
+    "lat": 45.024649,
+    "lon": 5.86104,
+    "distance_km": 4,
+    "duration_minutes": 150,
+    "ascent_m": 300,
+    "difficulty": "moderate",
+    "lake": false,
+    "features": [
+      "лес",
+      "водопад",
+      "панорама"
+    ],
+    "type": "круговой",
+    "season": "опубликованный сезон 1 мая — 30 ноября; при отсутствии снега",
+    "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/circuit-pedestre-le-cirque-de-prevourey-375906/",
+    "open_month_day": [
+      "05-01",
+      "11-30"
+    ]
+  },
+  {
+    "id": "traversee-vouillants",
+    "name": "Пересечение леса Вуйян",
+    "name_fr": "Traversée des Vouillants",
+    "area": "Vercors",
+    "start": "Parc de la Poya, Fontaine",
+    "lat": 45.195759,
+    "lon": 5.671619,
+    "distance_km": 6,
+    "duration_minutes": 150,
+    "ascent_m": 400,
+    "difficulty": "moderate",
+    "lake": false,
+    "features": [
+      "лес",
+      "панорама"
+    ],
+    "type": "линейный",
+    "season": "круглый год при подходящей погоде",
+    "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/traversee-des-vouillants-5755752/"
+  },
+  {
+    "id": "ferme-froussard",
+    "name": "Ферма Фруссар",
+    "name_fr": "Du désert de Jean-Jacques Rousseau à la ferme Froussard",
+    "area": "Vercors",
+    "start": "Désert Jean-Jacques Rousseau",
+    "lat": 45.171699,
+    "lon": 5.673441,
+    "distance_km": 5,
+    "duration_minutes": 120,
+    "ascent_m": 250,
+    "difficulty": "easy",
+    "lake": false,
+    "features": [
+      "лес",
+      "ферма"
+    ],
+    "type": "круговой",
+    "season": "круглый год при подходящей погоде",
+    "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/du-desert-de-jean-jacques-rousseau-a-la-ferme-froussard-5753936/"
+  },
+  {
+    "id": "belvedere-vizille",
+    "name": "Бельведер Визиля",
+    "name_fr": "Le belvédère de Vizille",
+    "area": "Vizille",
+    "start": "Place du Château, Vizille",
+    "lat": 45.075644,
+    "lon": 5.772459,
+    "distance_km": 6,
+    "duration_minutes": 120,
+    "ascent_m": 310,
+    "difficulty": "easy",
+    "lake": false,
+    "features": [
+      "лес",
+      "панорама"
+    ],
+    "type": "круговой",
+    "season": "круглый год при подходящей погоде",
+    "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/le-belvedere-de-vizille-270239/"
+  },
+  {
+    "id": "petit-sentier-prairie",
+    "name": "Малая тропа через луга",
+    "name_fr": "Le petit sentier dans la prairie",
+    "area": "Grenoble Sud",
+    "start": "Mairie de Saint-Georges-de-Commiers",
+    "lat": 45.038514,
+    "lon": 5.7014,
+    "distance_km": 3,
+    "duration_minutes": 120,
+    "ascent_m": 160,
+    "difficulty": "easy",
+    "lake": false,
+    "features": [
+      "лес",
+      "луга",
+      "природа"
+    ],
+    "type": "круговой",
+    "season": "круглый год при подходящей погоде",
+    "source_url": "https://www.grenoble-tourisme.com/fr/catalogue/detail/le-petit-sentier-dans-la-prairie-6420547/"
   }
 ]

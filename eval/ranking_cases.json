@@ -1,0 +1,8 @@
+[
+  {"query": "Поход к озеру до 4 часов, не слишком сложный", "intent": {"max_hours": 4, "difficulty": "moderate", "lake": true, "features": []}, "relevance": {"oeilly-luitel": 3, "premol-luitel": 2, "brouffier": 0, "luitel-long": 0, "jarry-pond": 0}},
+  {"query": "Лёгкая прогулка до двух часов через лес", "intent": {"max_hours": 2, "difficulty": "easy", "lake": false, "features": ["лес"]}, "relevance": {"vignasses": 3, "premol-luitel": 3, "belvedere-vizille": 2, "remparts-uriage": 1, "petit-sentier-prairie": 2}},
+  {"query": "Панорамный поход около трёх часов, умеренный", "intent": {"max_hours": 3, "difficulty": "moderate", "lake": false, "features": ["панорама"]}, "relevance": {"mont-rachais": 3, "emeindras": 3, "saint-eynard": 2, "ecoutoux": 2, "jarry-pond": 0}},
+  {"query": "Водопад до трёх часов, не слишком сложный", "intent": {"max_hours": 3, "difficulty": "moderate", "lake": false, "features": ["водопад"]}, "relevance": {"cirque-prevourey": 3, "saint-eynard": 0, "ecoutoux": 0, "cote-charvet": 0, "pre-du-playnet": 0}},
+  {"query": "Сложный поход к озеру до семи часов, но без технических участков", "intent": {"max_hours": 7, "difficulty": "hard", "lake": true, "features": []}, "relevance": {"luitel-long": 3, "lac-blanc": 0, "brouffier": 2, "oeilly-luitel": 1, "quirlies": 0}},
+  {"query": "Короткая лёгкая прогулка с панорамой", "intent": {"max_hours": 2, "difficulty": "easy", "lake": false, "features": ["панорама"]}, "relevance": {"belvedere-vizille": 3, "remparts-uriage": 2, "vignasses": 0, "premol-luitel": 0, "mont-rachais": 0}}
+]

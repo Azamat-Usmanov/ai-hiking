@@ -1,0 +1,64 @@
+name: Verify and deploy
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ai-hiking-production
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check Python and catalogue
+        run: |
+          python -m compileall -q app eval scripts
+          python -m eval.check_catalog
+          python -m eval.ranking_eval
+          git diff --exit-code -- eval/ranking_results.json
+
+  deploy:
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure restricted deploy key
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          test -n "$DEPLOY_SSH_KEY" && test -n "$DEPLOY_KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/ai_hiking_deploy
+          chmod 600 ~/.ssh/ai_hiking_deploy
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+      - name: Send verified release to VPS
+        run: |
+          printf '%s\n' "$GITHUB_SHA" > .deploy-commit
+          tar -czf - --exclude=.git --exclude=.github --exclude=.venv --exclude='__pycache__' . | \
+            ssh -T -i ~/.ssh/ai_hiking_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+              deploy@2.31.65.158
+      - name: Verify public service
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent --show-error http://2.31.65.158/api/health | \
+               python -c 'import json,os,sys; d=json.load(sys.stdin); assert d["status"] == "ok" and d["revision"] == os.environ["GITHUB_SHA"]'; then
+              exit 0
+            fi
+            sleep 5
+          done
+          exit 1
